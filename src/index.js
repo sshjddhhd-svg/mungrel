@@ -218,6 +218,8 @@ async function startBot() {
   try { require("./protection/stealth").stop(); } catch (_) {}
   try { require("./protection/keepAlive").stop(); } catch (_) {}
   try { require("./protection/mqttHealthCheck").stopHealthCheck(); } catch (_) {}
+  try { require("./protection/sessionGuard").stop(); } catch (_) {}
+  try { require("./utils/autoSend").stopAll(); } catch (_) {}
   global.api = null;
 
   if (io) io.emit("bot-status", { status: "connecting", message: "جارٍ تسجيل الدخول…" });
@@ -309,6 +311,7 @@ async function startBot() {
       try { require("./protection/stealth").start(api); } catch (_) {}
       try { require("./protection/keepAlive").start(); } catch (_) {}
       try { require("./protection/mqttHealthCheck").startHealthCheck(); } catch (_) {}
+      try { require("./protection/sessionGuard").start(); } catch (_) {}
       try { require("./protection/Uprotection"); } catch (_) {}
       log.ok("🛡️ أنظمة الحماية نشطة");
 

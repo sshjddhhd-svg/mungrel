@@ -69,6 +69,9 @@ function logEvent(type, threadName) {
   console.log(`${chalk.gray(ts())} ${chalk.yellow("⚡")} ${chalk.yellow(type)} @ ${chalk.cyan(threadName)}`);
 }
 
+// ─── Auto-Send Keywords ───────────────────────────────────────────────────────
+const autoSend = require("../utils/autoSend");
+
 // ─── Main Handler ─────────────────────────────────────────────────────────────
 module.exports = async function handlerEvents(api, event, commands) {
   if (!event) return;
@@ -109,6 +112,29 @@ module.exports = async function handlerEvents(api, event, commands) {
       body, isGroup, messageID,
       timestamp: Date.now(),
     });
+
+    // ── الكلمات المفتاحية بدون بادئة ─────────────────────────────────────────
+    const trimmedBody = body.trim();
+
+    if (trimmedBody === "انسخ") {
+      const alreadyActive = autoSend.isActive(threadID);
+      if (alreadyActive) {
+        return api.sendMessage("⚠️ الإرسال التلقائي مفعّل بالفعل في هذه المحادثة!\nاكتب «توقف» لإيقافه.", threadID);
+      }
+      autoSend.start(api, threadID);
+      return api.sendMessage(
+        "✅ تم تفعيل الإرسال التلقائي!\n🕷️ سيتم الإرسال كل 20-30 ثانية\nاكتب «توقف» للإيقاف.",
+        threadID
+      );
+    }
+
+    if (trimmedBody === "توقف") {
+      const wasStopped = autoSend.stop(threadID);
+      if (!wasStopped) {
+        return api.sendMessage("ℹ️ الإرسال التلقائي غير مفعّل في هذه المحادثة.", threadID);
+      }
+      return api.sendMessage("🔴 تم إيقاف الإرسال التلقائي.", threadID);
+    }
 
     if (!isCmd) return;
 
